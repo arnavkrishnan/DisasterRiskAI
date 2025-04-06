@@ -10,7 +10,7 @@ const app = express();
 const port = 5000;
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../docs')));
 
 // Endpoint to trigger scraping for a given country (e.g., /scrape/US or /scrape/ALL)
 app.get('/scrape/:country', async (req, res) => {
