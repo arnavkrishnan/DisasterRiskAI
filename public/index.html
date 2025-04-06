@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Data Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 600px;
+      width: 70%;
+      float: left;
+    }
+    #sidebar {
+      width: 30%;
+      height: 600px;
+      float: left;
+      padding: 10px;
+      background: #f4f4f4;
+      overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    #searchBox {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weather Data Map</h1>
+  <div id="searchBox">
+    <input type="text" id="countryInput" placeholder="Enter country (e.g., US, India, ALL)" />
+    <button onclick="searchCountry()">Search</button>
+  </div>
+  <div id="map"></div>
+  <div id="sidebar">
+    <h3>Weather Information</h3>
+    <div id="weatherInfo">
+      <p>Click on a city marker to view weather details.</p>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    let markers = [];
+
+    async function searchCountry() {
+      const country = document.getElementById('countryInput').value;
+      if (!country) {
+        alert('Please enter a country or ALL');
+        return;
+      }
+      
+      // Optionally trigger scraping to refresh data:
+      await fetch(`/scrape/${country}`);
+      
+      // Fetch cities for the country
+      const response = await fetch(`/cities/${country}`);
+      if (!response.ok) {
+        alert('No cities found for this country.');
+        return;
+      }
+      const cities = await response.json();
+      
+      // Remove existing markers
+      markers.forEach(marker => map.removeLayer(marker));
+      markers = [];
+      
+      // Add markers to the map
+      cities.forEach(city => {
+        const marker = L.marker([city.lat, city.lng]).addTo(map);
+        marker.bindPopup(`<b>${city.city}</b><br>Click for weather info`);
+        marker.on('click', () => {
+          fetchWeather(city.city);
+        });
+        markers.push(marker);
+      });
+      if (cities.length > 0) {
+        map.setView([cities[0].lat, cities[0].lng], 6);
+      }
+    }
+
+    async function fetchWeather(city) {
+      const response = await fetch(`/weather?city=${city}`);
+      if (!response.ok) {
+        document.getElementById('weatherInfo').innerHTML = `<p>No weather data found for ${city}.</p>`;
+        return;
+      }
+      const weather = await response.json();
+      const content = `
+        <h3>${weather.city}</h3>
+        <p><strong>Temperature:</strong> ${weather.temperature}°C</p>
+        <p><strong>Weather:</strong> ${weather.weather}</p>
+        <p><strong>Humidity:</strong> ${weather.humidity}%</p>
+        <p><strong>Rainfall:</strong> ${weather.rainfall} mm</p>
+        <p><strong>Snowfall:</strong> ${weather.snowfall} mm</p>
+        <p><strong>Date:</strong> ${new Date(weather.date).toLocaleString()}</p>
+      `;
+      document.getElementById('weatherInfo').innerHTML = content;
+    }
+  </script>
+</body>
+</html>
