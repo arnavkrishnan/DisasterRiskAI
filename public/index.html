@@ -96,10 +96,18 @@
       const content = `
         <h3>${weather.city}</h3>
         <p><strong>Temperature:</strong> ${weather.temperature}°C</p>
-        <p><strong>Weather:</strong> ${weather.weather}</p>
+        <p><strong>Feels Like:</strong> ${weather.feels_like}°C</p>
+        <p><strong>Pressure:</strong> ${weather.pressure} hPa</p>
         <p><strong>Humidity:</strong> ${weather.humidity}%</p>
-        <p><strong>Rainfall:</strong> ${weather.rainfall} mm</p>
-        <p><strong>Snowfall:</strong> ${weather.snowfall} mm</p>
+        <p><strong>Weather:</strong> ${weather.weather}</p>
+        <p><strong>Wind Speed:</strong> ${weather.wind_speed} m/s</p>
+        <p><strong>Wind Direction:</strong> ${weather.wind_deg}°</p>
+        <p><strong>Visibility:</strong> ${weather.visibility} meters</p>
+        <p><strong>Cloud Coverage:</strong> ${weather.clouds}%</p>
+        <p><strong>Rainfall (last 1 hour):</strong> ${weather.rainfall} mm</p>
+        <p><strong>Snowfall (last 1 hour):</strong> ${weather.snowfall} mm</p>
+        <p><strong>Latitude:</strong> ${weather.lat}</p>
+        <p><strong>Longitude:</strong> ${weather.lng}</p>
         <p><strong>Date:</strong> ${new Date(weather.date).toLocaleString()}</p>
       `;
       document.getElementById('weatherInfo').innerHTML = content;

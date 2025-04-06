@@ -13,15 +13,22 @@ async function fetchWeather(city, lat, lng) {
   try {
     const response = await axios.get(url);
     return {
-      city: city,
-      temperature: response.data.main.temp,
-      rainfall: response.data.rain ? response.data.rain['1h'] : 0,
-      snowfall: response.data.snow ? response.data.snow['1h'] : 0,
-      humidity: response.data.main.humidity,
-      weather: response.data.weather[0].description,
-      date: new Date(),
-      lat: lat,
-      lng: lng
+        city: city,
+        temperature: response.data.main.temp,
+        feels_like: response.data.main.feels_like,
+        pressure: response.data.main.pressure,
+        humidity: response.data.main.humidity,
+        weather: response.data.weather[0].description,
+        wind_speed: response.data.wind.speed,
+        wind_deg: response.data.wind.deg,
+        wind_gust: response.data.wind.gust,
+        visibility: response.data.visibility,
+        clouds: response.data.clouds.all,
+        rainfall: response.data.rain ? response.data.rain['1h'] : 0,
+        snowfall: response.data.snow ? response.data.snow['1h'] : 0,
+        lat: lat,
+        lng: lng,
+        date: new Date(),
     };
   } catch (error) {
     console.error(`Error fetching weather data for ${city}:`, error.message);
