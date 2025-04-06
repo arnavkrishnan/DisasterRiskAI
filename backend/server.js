@@ -4,6 +4,7 @@ const path = require('path');
 const { connectDB } = require('./db');
 const { scrapeAndStoreWeatherForCountry } = require('./weather');
 require('dotenv').config();
+const { exec } = require('child_process');
 
 const app = express();
 const port = 5000;
@@ -49,7 +50,6 @@ app.get('/cities/:country', async (req, res) => {
   try {
     const db = (await connectDB()).db('disasterRisk');
     const collection = db.collection('weatherData');
-    // Query by the attached country field (case-insensitive)
     const cities = await collection.find({ country: { $regex: country, $options: 'i' } }).toArray();
     if (!cities || cities.length === 0) {
       return res.status(404).send('No cities found for this country');
@@ -64,6 +64,36 @@ app.get('/cities/:country', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error fetching cities');
+  }
+});
+
+// New route to handle AI analysis
+app.get('/analyze_weather', async (req, res) => {
+  const { city } = req.query;
+  if (!city) {
+    return res.status(400).send('City parameter is required');
+  }
+  try {
+    const db = (await connectDB()).db('disasterRisk');
+    const collection = db.collection('weatherData');
+    const weatherData = await collection.findOne({ city: city });
+    if (!weatherData) {
+      return res.status(404).send('Weather data not found for this city');
+    }
+    
+    // Call the Python script to analyze the weather data
+    exec(`python3 analyze_weather.py '${JSON.stringify(weatherData)}'`, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return res.status(500).send('Error analyzing weather data');
+      }
+      // Return the AI analysis to the frontend
+      const aiAnalysis = stdout.trim();
+      res.status(200).json({ analysis: aiAnalysis });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching weather data for analysis');
   }
 });
 

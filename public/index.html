@@ -40,6 +40,11 @@
     <div id="weatherInfo">
       <p>Click on a city marker to view weather details.</p>
     </div>
+    <!-- New section for AI Disaster Risk Analysis -->
+    <h3>AI Disaster Risk Analysis</h3>
+    <div id="aiAnalysis">
+      <p>Click on a city to get the AI-based analysis of weather risks.</p>
+    </div>
   </div>
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <script>
@@ -93,6 +98,12 @@
         return;
       }
       const weather = await response.json();
+      
+      // Call the Python script to get disaster analysis
+      const analysisResponse = await fetch(`/analyze_weather?city=${city}`);
+      const aiAnalysis = await analysisResponse.json();
+      
+      // Display weather data
       const content = `
         <h3>${weather.city}</h3>
         <p><strong>Temperature:</strong> ${weather.temperature}°C</p>
@@ -111,6 +122,13 @@
         <p><strong>Date:</strong> ${new Date(weather.date).toLocaleString()}</p>
       `;
       document.getElementById('weatherInfo').innerHTML = content;
+
+      // Display AI analysis in a separate section
+      const analysisContent = `
+        <p><strong>AI Disaster Risk Analysis:</strong></p>
+        <p>${aiAnalysis.analysis}</p>
+      `;
+      document.getElementById('aiAnalysis').innerHTML = analysisContent;
     }
   </script>
 </body>
